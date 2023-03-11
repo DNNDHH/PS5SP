@@ -58,7 +58,7 @@ remount(const char *dev, const char *path) {
 
 
 /**
- * Remount /system and /system_ex with write permissions.
+ * Remount /system and /system_ex /preinst with write permissions.
  **/
 int
 main(void) {
@@ -72,5 +72,10 @@ main(void) {
     return EXIT_FAILURE;
   }
 
+  if(remount("/dev/ssd0.preinst", "/preinst")) {
+    perror("remount /preinst");
+    return EXIT_FAILURE;
+  }
+  
   return EXIT_SUCCESS;
 }
