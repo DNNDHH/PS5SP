@@ -89,5 +89,10 @@ main(void) {
     return EXIT_FAILURE;
   }
 
+  if(remount("/dev/ssd0.preinst", "/preinst")) {
+    perror("remount /preinst");
+    return EXIT_FAILURE;
+  }
+  
   return EXIT_SUCCESS;
 }
