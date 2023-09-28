@@ -18,16 +18,17 @@ ifndef PS5_PAYLOAD_SDK
     $(error PS5_PAYLOAD_SDK is undefined)
 endif
 
-PS5_HOST ?= ps5
-PS5_PORT ?= 9021
+PS5_HOST     ?= ps5
+PS5_PORT     ?= 9021
+PS5_TITLE_ID ?= PPSA01325
 
-ELF := ps.elf
+ELF := launch_app.elf
 
 CC := $(PS5_PAYLOAD_SDK)/host/x86_64-ps5-payload-cc
 LD := $(PS5_PAYLOAD_SDK)/host/x86_64-ps5-payload-ld
 
-CFLAGS := -O2
-LDADD  := -lkernel_web -lSceLibcInternal
+CFLAGS := -O2 -DPS5_TITLE_ID='"$(PS5_TITLE_ID)"'
+LDADD  := -lkernel_web -lSceLibcInternal -lSceSystemService -lSceUserService
 
 all: $(ELF)
 

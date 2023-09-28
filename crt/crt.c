@@ -15,6 +15,7 @@ along with this program; see the file COPYING. If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "payload.h"
+#include "syscall.h"
 
 
 /**
@@ -37,26 +38,51 @@ extern int main(int argc, char* argv[], char *envp[]);
 
 
 /**
+ * For error reporting to /dev/klog and /dev/stdout
+ **/
+static char* (*strerror)(int) = 0;
+static void  (*printf)(const char*, ...) = 0;
+static void
+kerror(const char *s, int error) {
+  printf("%s: %s\n", s, strerror(error));
+
+  syscall(0x259, 7, "<118>[homebrew] ", 0);
+  syscall(0x259, 7, s, 0);
+  syscall(0x259, 7, ": ", 0);
+  syscall(0x259, 7, strerror(error), 0);
+  syscall(0x259, 7, "\n", 0);
+}
+
+
+/**
  * Entry-point used by the ELF loader.
  **/
 void
 _start(payload_args_t *args) {
   unsigned long count;
 
-  *args->payloadout = 0;
-
-  // clear bss
   for(unsigned char* bss=__bss_start; bss<__bss_end; bss++) {
     *bss = 0;
+  }
+
+  if((*args->payloadout=args->sceKernelDlsym(0x2, "strerror", &strerror))) {
+    return;
+  }
+
+  if((*args->payloadout=args->sceKernelDlsym(0x2, "printf", &printf))) {
+    return;
   }
 
   // run module constructors
   count = __init_array_end - __init_array_start;
   for(int i=0; i<count; i++) {
     __init_array_start[i](args);
+    if(*args->payloadout) {
+      kerror("Unable to initialize payload", *args->payloadout);
+      break;
+    }
   }
 
-  // run payload if module constructors ran without error
   if(!*args->payloadout) {
     *args->payloadout = main(0, 0, 0);
   }
@@ -64,6 +90,6 @@ _start(payload_args_t *args) {
   // run module destructors
   count = __fini_array_end - __fini_array_start;
   for(int i=0; i<count; i++) {
-    __fini_array_start[i]();
+    __fini_array_start[count-i-1]();
   }
 }
