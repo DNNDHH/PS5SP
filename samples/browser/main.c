@@ -19,7 +19,7 @@ along with this program; see the file COPYING. If not, see
 #include <unistd.h>
 
 #ifndef PS5_URL
-#define PS5_URL "http://192.168.1.1"
+#define PS5_URL "http://www.baidu.com"
 #endif
 
 
