@@ -52,6 +52,7 @@ jobs:
         make -C samples/remount
         make -C samples/browser
         make -C samples/launch_app
+        make -C samples/ps5-payload-hbldr
         bash samples/hello_cmake/build.sh
 
     - name: Upload SDK
